@@ -1,0 +1,15 @@
+{
+  "configurations": [
+    {
+      "name": "Linterconfig",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/dependencies/include/glad" // Replace <path_to_glad> with the actual path to your glad library's include directory
+      ],
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "c17",
+      "cppStandard": "c++17"
+    }
+  ],
+  "version": 4
+}
