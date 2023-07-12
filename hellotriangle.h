@@ -1,7 +1,7 @@
 
 #pragma once
 
-class Hellowindow{
+class Hellotriangle{
 public:
    int init();
 };

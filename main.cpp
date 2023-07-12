@@ -2,15 +2,11 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
-//#include "hellotriangle.h"
-#include "hellowindow.h"
+#include "hellotriangle.h"
 
 
 int main()
 {
-  //  Hellotriangle Hellotriangle;
-    Hellowindow Hellowindow;
-  //  Hellotriangle.init();
-   return Hellowindow.init();
-    
+   Hellotriangle Hellotriangle;
+   return Hellotriangle.init();
 }
