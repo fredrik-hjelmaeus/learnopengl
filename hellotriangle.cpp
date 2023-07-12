@@ -10,7 +10,6 @@ void processInput(GLFWwindow *window);
 
 int Hellotriangle::init()
 {
-  
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -43,15 +42,20 @@ int Hellotriangle::init()
     // register callback so it resize viewpoer when window is resized
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // Vertex input
+    // Vertex input with indices prepared for indexed draws
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f, // left
-         0.5f, -0.5f, 0.0f, // right
-         0.0f,  0.5f, 0.0f  // top
+       0.5f, 0.5, 0.0f, // top right
+       0.5f, -0.5f, 0.0f, // bottom right
+      -0.5f, -0.5f, 0.0f, // bottom left
+      -0.5f, 0.5f, 0.0f // top left  
+    };
+    unsigned int indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3 // second triangle
     };
 
     // Send vertex data to graphics card
-    {
+    
         ///////////////////////////
         // Vertex Array Object ////
         ///////////////////////////
@@ -72,10 +76,23 @@ int Hellotriangle::init()
 
         // copy vertices into buffer memory
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    }
+
+        ///////////////////////////
+        // Element buffer object //
+        ///////////////////////////
+        unsigned int EBO;
+        glGenBuffers(1, &EBO);
+
+        // bind buffer
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+        // copy indices into buffer memory
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        
+    
 
     // Process vertex data on graphics card
-    {
+    
         /////////////////////////////////
         // Vertex Shader ////////////////
         /////////////////////////////////
@@ -181,7 +198,8 @@ int Hellotriangle::init()
         // enable vertex attribute
         glEnableVertexAttribArray(0);
 
-    }
+    // draw in wireframe mode
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // loop
     while(!glfwWindowShouldClose(window))
@@ -194,7 +212,10 @@ int Hellotriangle::init()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Draw 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
         // double buffer
         glfwSwapBuffers(window);
