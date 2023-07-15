@@ -44,6 +44,9 @@ int main()
         return -1;
     }
 
+    // enable depth test
+    glEnable(GL_DEPTH_TEST);  
+
     // build and compile our shader program
     Shader ourShader("vertexshader.vs", "fragmentshader.fs"); // you can name your shader files however you like
 
@@ -179,7 +182,8 @@ int main()
         processInput(window);
         // render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        // clear the color & depth buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
