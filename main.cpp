@@ -94,7 +94,7 @@ int main()
         -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
-    unsigned int VBO, VAO, EBO;
+    unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
    // glGenBuffers(1, &EBO);
@@ -209,12 +209,38 @@ int main()
         // activate shader
         ourShader.use();
 
-        
-       // view & projection matrix
+          // view & projection matrix
         glm::mat4 view          = glm::mat4(1.0f);
         glm::mat4 projection    = glm::mat4(1.0f);
         view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+        // camera
+        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);  // just a static initial position
+         // The following 3 lines is prep work for rotating the camera 
+        const float radius = 10.0f;
+        float camX = sin(glfwGetTime()) * radius;
+        float camZ = cos(glfwGetTime()) * radius;
+        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+
+        // right axis
+        //First specifying an up vector that points upwards (in world space). 
+        // Then we do a cross product on the up vector and the direction vector from step 2. 
+        // Since the result of a cross product is a vector perpendicular to both vectors, 
+        // we will get a vector that points in the positive x-axis's direction
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+
+        // up axis
+        // retrieving the vector that points to the camera's positive y-axis.
+        glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+
+        // set lookat matrix
+       // glm::mat4 lookAt = glm::mat4(1.0f);
+        view = glm::lookAt(glm::vec3(camX,cameraPos.y,camZ), cameraTarget, cameraUp);
+
+     
         // pass transformation matrices to the shader
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
@@ -230,7 +256,6 @@ int main()
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
-        
 
         // render the box
         glBindVertexArray(VAO);
