@@ -8,7 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -189,38 +189,15 @@ int main()
         glm::vec3(-1.3f,  1.0f, -1.5f)  
     };
 
-    // render loop
-    while (!glfwWindowShouldClose(window))
-    {
-        // input
-        processInput(window);
-        // render
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        // clear the color & depth buffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // bind textures on corresponding texture units
-        glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1); // activate the texture unit first before binding texture
-        glBindTexture(GL_TEXTURE_2D, texture2);
-
-        // send transformation matrices to shader
-        // activate shader
-        ourShader.use();
-
-          // view & projection matrix
+         // view & projection matrix
         glm::mat4 view          = glm::mat4(1.0f);
         glm::mat4 projection    = glm::mat4(1.0f);
         view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-
-        // camera
+        // construct a camera using position, target and up vector
+        // camera position
         glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);  // just a static initial position
-         // The following 3 lines is prep work for rotating the camera 
-        const float radius = 10.0f;
-        float camX = sin(glfwGetTime()) * radius;
-        float camZ = cos(glfwGetTime()) * radius;
+        // camera target
         glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
@@ -237,9 +214,30 @@ int main()
         glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 
         // set lookat matrix
-       // glm::mat4 lookAt = glm::mat4(1.0f);
-        view = glm::lookAt(glm::vec3(camX,cameraPos.y,camZ), cameraTarget, cameraUp);
+        glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); // the direction of the camera
 
+    // render loop
+    while (!glfwWindowShouldClose(window))
+    {
+        // input
+        processInput(window,cameraPos,cameraFront,cameraUp);
+        
+        // update camera
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        // render
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        // clear the color & depth buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // bind textures on corresponding texture units
+        glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1); // activate the texture unit first before binding texture
+        glBindTexture(GL_TEXTURE_2D, texture2);
+
+        // send transformation matrices to shader
+        // activate shader
+        ourShader.use();
      
         // pass transformation matrices to the shader
         ourShader.setMat4("projection", projection);
@@ -275,15 +273,24 @@ int main()
     // glfw: terminate, clearing all previously allocated GLFW resources.
     glfwTerminate();
     return 0;
+    // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+    
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp)
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
-
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
+        const float cameraSpeed = 0.05f; // adjust accordingly
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            cameraPos += cameraSpeed * cameraFront;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            cameraPos -= cameraSpeed * cameraFront;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+};
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
