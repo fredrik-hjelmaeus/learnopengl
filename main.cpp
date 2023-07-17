@@ -7,7 +7,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+// globals
+float lastX = 400, lastY = 300, xoffset = 0, yoffset = 0,yaw = -90.0f,pitch = 0.0f;
+bool firstMouse = true;
+// set lookat matrix
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); // the direction of the camera
+
+// prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void processInput(GLFWwindow *window, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp, float &deltaTime);
 
 // settings
@@ -214,12 +222,16 @@ int main()
         // retrieving the vector that points to the camera's positive y-axis.
         glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 
-        // set lookat matrix
-        glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); // the direction of the camera
-
         // game tick / deltaTime
         float deltaTime = 0.0f;	// Time between current frame and last frame
         float lastFrame = 0.0f; // Time of last frame
+
+       
+        
+
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+        
+        glfwSetCursorPosCallback(window, mouse_callback);  
 
     // render loop
     while (!glfwWindowShouldClose(window))
@@ -229,8 +241,22 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;  
 
+        // update mouse input
+       /*  yaw   += xoffset;
+        pitch += yoffset; 
+        if(pitch > 89.0f)
+        pitch =  89.0f;
+        if(pitch < -89.0f)
+        pitch = -89.0f;
+        glm::vec3 direction;
+        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        direction.y = sin(glm::radians(pitch));
+        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        cameraFront = glm::normalize(direction); */
+
         // input
         processInput(window,cameraPos,cameraFront,cameraUp,deltaTime);
+
         
         // update camera
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -307,4 +333,36 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+  
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; 
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw   += xoffset;
+    pitch += yoffset;
+
+    if(pitch > 89.0f)
+        pitch = 89.0f;
+    if(pitch < -89.0f)
+        pitch = -89.0f;
+
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(direction);
 }
