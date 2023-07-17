@@ -8,14 +8,16 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // globals
-float lastX = 400, lastY = 300, xoffset = 0, yoffset = 0,yaw = -90.0f,pitch = 0.0f;
+float lastX = 400, lastY = 300, xoffset = 0, yoffset = 0,yaw = -90.0f,pitch = 0.0f,fov = 45.0f;
 bool firstMouse = true;
+
 // set lookat matrix
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); // the direction of the camera
 
 // prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp, float &deltaTime);
 
 // settings
@@ -201,7 +203,7 @@ int main()
         glm::mat4 view          = glm::mat4(1.0f);
         glm::mat4 projection    = glm::mat4(1.0f);
         view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        
 
         // construct a camera using position, target and up vector
         // camera position
@@ -226,13 +228,10 @@ int main()
         float deltaTime = 0.0f;	// Time between current frame and last frame
         float lastFrame = 0.0f; // Time of last frame
 
-       
-        
-
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
-        
         glfwSetCursorPosCallback(window, mouse_callback);  
-
+        glfwSetScrollCallback(window, scroll_callback); 
+        
     // render loop
     while (!glfwWindowShouldClose(window))
     {
@@ -241,18 +240,6 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;  
 
-        // update mouse input
-       /*  yaw   += xoffset;
-        pitch += yoffset; 
-        if(pitch > 89.0f)
-        pitch =  89.0f;
-        if(pitch < -89.0f)
-        pitch = -89.0f;
-        glm::vec3 direction;
-        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        direction.y = sin(glm::radians(pitch));
-        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        cameraFront = glm::normalize(direction); */
 
         // input
         processInput(window,cameraPos,cameraFront,cameraUp,deltaTime);
@@ -260,6 +247,7 @@ int main()
         
         // update camera
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        projection = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);  
         // render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         // clear the color & depth buffer
@@ -334,6 +322,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if (firstMouse)
@@ -365,4 +354,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     direction.y = sin(glm::radians(pitch));
     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     cameraFront = glm::normalize(direction);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    fov -= (float)yoffset;
+    if (fov < 1.0f)
+        fov = 1.0f;
+    if (fov > 45.0f)
+        fov = 45.0f; 
 }
