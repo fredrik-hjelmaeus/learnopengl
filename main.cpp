@@ -8,7 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp);
+void processInput(GLFWwindow *window, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp, float &deltaTime);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -194,6 +194,7 @@ int main()
         glm::mat4 projection    = glm::mat4(1.0f);
         view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
         // construct a camera using position, target and up vector
         // camera position
         glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);  // just a static initial position
@@ -216,11 +217,20 @@ int main()
         // set lookat matrix
         glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); // the direction of the camera
 
+        // game tick / deltaTime
+        float deltaTime = 0.0f;	// Time between current frame and last frame
+        float lastFrame = 0.0f; // Time of last frame
+
     // render loop
     while (!glfwWindowShouldClose(window))
     {
+        // per-frame time logic
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;  
+
         // input
-        processInput(window,cameraPos,cameraFront,cameraUp);
+        processInput(window,cameraPos,cameraFront,cameraUp,deltaTime);
         
         // update camera
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -277,11 +287,11 @@ int main()
     
 }
 
-void processInput(GLFWwindow *window, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp)
+void processInput(GLFWwindow *window, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp, float &deltaTime)
 {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
-        const float cameraSpeed = 0.05f; // adjust accordingly
+        const float cameraSpeed = 2.5f * deltaTime; 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             cameraPos += cameraSpeed * cameraFront;
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
