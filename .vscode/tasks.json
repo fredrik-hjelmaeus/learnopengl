@@ -28,7 +28,9 @@
         "CoreVideo",
         "-framework",
         "CoreFoundation",
-        "-Wno-deprecated"
+        "-Wno-deprecated",
+        "-L/usr/local/Cellar/assimp/5.2.5/lib",
+        "-lassimp"
       ],
       "options": {
         "cwd": "${fileDirname}"
